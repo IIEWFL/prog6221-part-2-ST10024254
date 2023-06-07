@@ -1,0 +1,225 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class Ingredient
+{
+    public string Name { get; set; }
+    public string Unit { get; set; }
+    public double Quantity { get; set; }
+    public string FoodGroup { get; set; }
+    public int Calories { get; set; }
+    
+}
+
+class Recipe
+{
+    public string Name { get; set; }
+    public List<Ingredient> Ingredients { get; set; }
+    public List<string> Instructions { get; set; }
+
+    public int GetTotalCalories()
+    {
+        int totalCalories = 0;
+        foreach (var ingredient in Ingredients)
+        {
+            totalCalories += ingredient.Calories;
+        }
+        return totalCalories;
+    }
+
+    public bool CalorieLimit(int limit)
+    {
+        return GetTotalCalories() > limit;
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        List<Recipe> recipes = new List<Recipe>();
+
+        while (true)
+        {
+            Console.WriteLine("Please enter recipe details (or type 'end' to finish): ");
+            Console.Write("Recipe name: ");
+            string name = Console.ReadLine();
+
+            if (name.ToLower() == "end")
+                break;
+
+            Recipe recipe = new Recipe();
+            recipe.Name = name;
+
+            recipe.Ingredients = new List<Ingredient>();
+            Console.WriteLine("Enter ingredients (one per line, leave empty to finish): ");
+            while (true)
+            {
+                Console.Write("Ingredient name: ");
+                string ingredientName = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(ingredientName))
+                    break;
+
+                Console.Write("Quantity: ");
+                double quantity = double.Parse(Console.ReadLine());
+
+                Console.Write("Unit of Measurement: ");
+                string unit = Console.ReadLine();
+
+                Console.Write("Calories: ");
+                int calories = int.Parse(Console.ReadLine());
+
+                Console.Write("Food group: ");
+                string foodGroup = Console.ReadLine();
+
+                Ingredient ingredient = new Ingredient
+                {
+                    Name = ingredientName,
+                    Unit = unit,
+                    Quantity = quantity,
+                    FoodGroup = foodGroup,
+                    Calories = calories,
+                };
+
+                recipe.Ingredients.Add(ingredient);
+            }
+
+            Console.Write("Enter the number of instructions: ");
+            int numInstructions = int.Parse(Console.ReadLine());
+
+            recipe.Instructions = new List<string>();
+            Console.WriteLine("Enter instructions: ");
+            for (int i = 1; i <= numInstructions; i++)
+            {
+                Console.Write($"Step {i}: ");
+                string instruction = Console.ReadLine();
+                recipe.Instructions.Add(instruction);
+            }
+
+            recipes.Add(recipe);
+            Console.WriteLine("Recipe added!");
+
+            Console.WriteLine();
+        }
+
+        while (true)
+        {
+            Console.WriteLine("Recipe Menu");
+            Console.WriteLine();
+            Console.WriteLine("1. View recipe");
+            Console.WriteLine("2. Display all recipes entered");
+            Console.WriteLine("3. Delete a recipe");
+            Console.WriteLine("4. Calculate total calories of a recipe");
+            Console.WriteLine("5. Exit Menu");
+
+            Console.Write("Please enter your choice: ");
+            int menuChoice = int.Parse(Console.ReadLine());
+
+            switch (menuChoice)
+            {
+                case 1:
+                    
+                    Console.Write("Please enter the number of the recipe you'd like to view: ");
+                    int choiceIndex = int.Parse(Console.ReadLine());
+
+                    // Display the chosen recipe
+                    Console.WriteLine();
+                    DisplayRecipe(recipes[choiceIndex - 1]);
+                    break;
+                case 2:
+
+                    // Display all recipes in alphabetical order by recipe name
+                    Console.WriteLine();
+                    DisplayAllRecipes(recipes);
+                    break;
+                case 3:
+  
+                    Console.Write("Please Enter the number of the recipe you'd like to delete: ");
+                    int deleteIndex = int.Parse(Console.ReadLine());
+
+                    // Delete the chosen recipe
+                    if (deleteIndex >= 1 && deleteIndex <= recipes.Count)
+                    {
+                        Recipe deletedRecipe = recipes[deleteIndex - 1];
+                        recipes.RemoveAt(deleteIndex - 1);
+                        Console.WriteLine($"Recipe '{deletedRecipe.Name}' has been deleted.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("The Recipe Number you have entered is Invalid. Please try again.");
+                    }
+                    break;
+                case 4:
+                    
+                    Console.Write("Please enter the number of the recipe you would like to calculate total calories for: ");
+                    int caloriesIndex = int.Parse(Console.ReadLine());
+
+                    // Calculate and display total calories of the chosen recipe
+                    if (caloriesIndex >= 1 && caloriesIndex <= recipes.Count)
+                    {
+                        Recipe selectedRecipe = recipes[caloriesIndex - 1];
+                        int totalCalories = selectedRecipe.GetTotalCalories();
+                        Console.WriteLine($"The Total calories of recipe '{selectedRecipe.Name}': {totalCalories}");
+
+                        if (selectedRecipe.CalorieLimit(300))
+                        {
+                            Console.WriteLine("Caution: This recipe has been found to exceed 300 calories.");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("The Recipe Number you have entered is Invalid. Please try again.");
+                    }
+                    break;
+                case 5:
+                    // Exit the program
+                    Console.WriteLine("Thank you for using the system.");
+                    return;
+                default:
+                    Console.WriteLine("You have entered an Invalid choice.Please try again.");
+                    break;
+            }
+
+            Console.WriteLine();
+        }
+    }
+
+    static void DisplayRecipe(Recipe recipe)
+    {
+        Console.WriteLine($"Recipe: {recipe.Name} ");
+        Console.WriteLine("Ingredients: ");
+        Console.WriteLine();
+        foreach (var ingredient in recipe.Ingredients)
+        {
+            Console.WriteLine($"- {ingredient.Quantity} {ingredient.Unit} {ingredient.Name}, {ingredient.Calories} calories, {ingredient.FoodGroup}");
+        }
+
+        Console.WriteLine("Listed below are the Instructions: ");
+        Console.WriteLine();
+        for (int i = 0; i < recipe.Instructions.Count; i++)
+        {
+            Console.WriteLine($"Step {i + 1}: {recipe.Instructions[i]}");
+        }
+    }
+
+    static void DisplayAllRecipes(List<Recipe> recipes)
+    {
+        if (recipes.Count == 0)
+        {
+            Console.WriteLine("There are no recipes found.");
+            return;
+        }
+
+        Console.WriteLine("Listed are all Recipes requested in Alphabetical Order)");
+        Console.WriteLine();
+
+        List<Recipe> sortedRecipes = recipes.OrderBy(r => r.Name).ToList();
+
+        for (int i = 0; i < sortedRecipes.Count; i++)
+        {
+            Console.WriteLine($"{i + 1}. {sortedRecipes[i].Name}");
+        }
+    }
+}
+
